@@ -9,8 +9,8 @@
         --stripe-gray: #d0d0d0;
         --card-bg: #202020;
         --white: #ffffff;
-        --tilt: 37deg;                 /* JS 实测 arctan(高/宽) */
-        --span: 100vh;                 /* JS 实测 角-角 垂直跨度 */
+        --tilt: 37deg;
+        --span: 100vh;
         --rot: calc(-1 * var(--tilt));
         --cycle: 12.5%;
     }
@@ -39,20 +39,21 @@
     }
 
     /* ========== 第 2 层：白色蒙版 ==========
-       全部锚定左上角，先旋转、再沿垂直方向偏移 --off。
-       首尾贴角 → 被屏幕裁成三角形；中间按 span 比例排布 → 间隙恒定 */
+       锚定左上角；rotate → 垂直偏移 --off → 沿带居中。
+       首尾：超厚 + 中心线穿角点 = 被屏幕裁成三角形
+       中间：按 span 比例排布 = 间隙恒定 */
     .mask {
         position: fixed; left: 0; top: 0; z-index: 2;
         width: 200vmax;
         background: var(--white);
         transform: rotate(var(--rot)) translateY(var(--off)) translateX(-50%);
     }
-    .mask-a { --off: 9vh;                          height: 14vh; }  /* 左上角三角形 */
-    .mask-b { --off: calc(var(--span) * 0.36);     height: 20vh; }
-    .mask-c { --off: calc(var(--span) * 0.64);     height: 20vh; }
-    .mask-d { --off: calc(var(--span) - 9vh);      height: 14vh; }  /* 右下角三角形 */
+    .mask-a { --off: 0;                          height: 40vh; }  /* 左上三角形 */
+    .mask-b { --off: calc(var(--span) * 0.40);   height: 20vh; }
+    .mask-c { --off: calc(var(--span) * 0.62);   height: 20vh; }
+    .mask-d { --off: var(--span);                height: 40vh; }  /* 右下三角形 */
 
-    /* ========== 第 3 层：黑色按钮，钉在蒙版上 ========== */
+    /* ========== 第 3 层：黑色按钮 ========== */
     .card {
         position: absolute; top: 50%; left: 50%;
         width: 22vw; height: 72%;
@@ -76,10 +77,10 @@
     .card h2 { font-size: clamp(1.05rem, 2vw, 1.6rem); font-weight: 700; color: var(--white); }
     .card p  { font-size: clamp(.72rem, 1.1vw, .95rem); color: var(--white); opacity: .85; }
 
-    /* ========== 纯倾斜文字 ========== */
+    /* ========== 纯倾斜文字（落在角三角形内） ========== */
     .word {
         position: absolute; top: 50%; left: 50%;
-        transform: translate(-50%, -50%) translateX(var(--dx, 0));
+        transform: translate(-50%, -50%) translateX(var(--dx, 0)) translateY(var(--dy, 0));
         white-space: nowrap;
         color: var(--card-bg);
         font-size: clamp(1.6rem, 3.6vw, 3rem);
@@ -88,18 +89,17 @@
         transition: opacity .25s;
     }
     .word:hover { opacity: .7; }
-    .mask-a .word { --dx: 12vw; }   /* 从左上角沿蒙版滑入画面 */
-    .mask-d .word { --dx: -12vw; }  /* 从右下角沿蒙版滑入画面 */
+    .mask-a .word { --dx: 6vw;   --dy: 12vh; }
+    .mask-d .word { --dx: -6vw;  --dy: -12vh; }
 
     /* ========== 移动端适配 ========== */
     @media (max-width: 768px) {
-        .mask-a, .mask-d { height: 12vh; }
         .mask-b, .mask-c { height: 16vh; }
         .card { width: 42vw; border-radius: 3vw; }
         .card-1 { --dx: -24vh; }
         .card-2 { --dx:  24vh; }
-        .mask-a .word { --dx: 14vh; }
-        .mask-d .word { --dx: -14vh; }
+        .mask-a .word { --dx: -10vh; --dy: 12vh; }
+        .mask-d .word { --dx: 10vh;  --dy: -12vh; }
     }
 </style>
 </head>
@@ -133,12 +133,11 @@
     </div>
 
     <script>
-        // 开局测量屏幕：arctan 得角度；角-角垂直跨度得 span
         (function () {
             function measure() {
                 var w = window.innerWidth, h = window.innerHeight;
                 var tilt = Math.atan2(h, w) * 180 / Math.PI;
-                var span = 2 * w * h / Math.hypot(w, h);   // 左上角到右下角的垂直距离
+                var span = 2 * w * h / Math.hypot(w, h);
                 var s = document.documentElement.style;
                 s.setProperty('--tilt', tilt.toFixed(2) + 'deg');
                 s.setProperty('--span', span.toFixed(1) + 'px');
