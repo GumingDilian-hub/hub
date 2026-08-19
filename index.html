@@ -37,22 +37,23 @@
         to   { background-position: 12.5vw 0; }
     }
 
-    /* ========== 第 2 层：白色蒙版（父容器，负责旋转） ========== */
+    /* ========== 第 2 层：无限延长的白色蒙版 ========== */
     .mask {
         position: fixed; z-index: 2;
         background: var(--white);
+        width: 200vmax;                     /* 远超屏幕对角线 = 视觉无限 */
         transform: translate(-50%, -50%) rotate(var(--rot));
     }
-    .mask-a { left: 16%; top: 24%; width: 46vw; height: 15vh; }
-    .mask-b { left: 36%; top: 46%; width: 66vw; height: 20vh; }
-    .mask-c { left: 57%; top: 63%; width: 66vw; height: 20vh; }
-    .mask-d { left: 82%; top: 80%; width: 46vw; height: 15vh; }
+    .mask-a { left: 16%; top: 24%; height: 15vh; }
+    .mask-b { left: 36%; top: 46%; height: 20vh; }
+    .mask-c { left: 57%; top: 63%; height: 20vh; }
+    .mask-d { left: 82%; top: 80%; height: 15vh; }
 
-    /* ========== 第 3 层：黑色按钮，相对定位钉在蒙版上 ========== */
+    /* ========== 第 3 层：黑色按钮，钉在蒙版中心两侧 ========== */
     .card {
-        position: absolute; top: 50%;
-        height: 72%; width: 42%;
-        transform: translateY(-50%);        /* 只负责垂直居中，旋转继承蒙版 */
+        position: absolute; top: 50%; left: 50%;
+        width: 22vw; height: 72%;
+        transform: translate(-50%, -50%) translateX(var(--dx, 0));
         background: var(--card-bg);
         color: var(--white);
         border-radius: 1.1vw;
@@ -62,11 +63,11 @@
         text-decoration: none;
         transition: transform .35s cubic-bezier(.2, .7, .3, 1), box-shadow .35s;
     }
-    .card-1 { left: 5%; }
-    .card-2 { left: 53%; }
+    .card-1 { --dx: -17vw; }
+    .card-2 { --dx:  17vw; }
 
     .card:hover {
-        transform: translateY(calc(-50% - 1.4vh));
+        transform: translate(-50%, -50%) translateX(var(--dx, 0)) translateY(-1.4vh);
         box-shadow: 0 2.2vh 3.6vh rgba(32, 32, 32, .3);
     }
     .card h2 { font-size: clamp(1.05rem, 2vw, 1.6rem); font-weight: 700; color: var(--white); }
@@ -85,13 +86,15 @@
     }
     .word:hover { opacity: .7; }
 
-    /* ========== 移动端：蒙版加长，按钮随蒙版自动适配 ========== */
+    /* ========== 移动端适配 ========== */
     @media (max-width: 768px) {
-        .mask-a { left: 30%; top: 14%; width: max(70vw, 40vh); height: 10vh; }
-        .mask-b { left: 45%; top: 28%; width: max(95vw, 60vh); height: 15vh; }
-        .mask-c { left: 55%; top: 52%; width: max(95vw, 60vh); height: 15vh; }
-        .mask-d { left: 70%; top: 80%; width: max(70vw, 40vh); height: 10vh; }
-        .card { border-radius: 3vw; }
+        .mask-a { left: 30%; top: 14%; height: 10vh; }
+        .mask-b { left: 45%; top: 28%; height: 15vh; }
+        .mask-c { left: 55%; top: 52%; height: 15vh; }
+        .mask-d { left: 70%; top: 80%; height: 10vh; }
+        .card { width: 42vw; border-radius: 3vw; }
+        .card-1 { --dx: -24vh; }
+        .card-2 { --dx:  24vh; }
     }
 </style>
 </head>
@@ -99,7 +102,7 @@
     <!-- 第 1 层：粗斑马纹 -->
     <div class="stripes"></div>
 
-    <!-- 第 2 层：白色蒙版，内嵌内容 -->
+    <!-- 第 2 层：无限长白色蒙版 -->
     <div class="mask mask-a">
         <a href="#" class="word">网页标题</a>
     </div>
