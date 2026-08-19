@@ -1,191 +1,158 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Synapse</title>
-  <style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>统一站点</title>
+<style>
     :root {
-      --angle: -38deg; /* fallback，JS 会动态更新 */
-      --stripe-width: 4vmin;      /* 斑马纹宽度 */
-      --mask-width: 18vmin;       /* 白色蒙版宽度 */
-      --gap: var(--mask-width);   /* 蒙版间距 = 蒙版宽度 */
+        --stripe-gray: #d0d0d0;   /* 条纹灰 */
+        --card-bg: #202020;       /* 卡片黑 */
+        --white: #ffffff;
+        --tilt: 37deg;            /* 由 JS 开局测量屏幕算 arctan 覆写 */
+        --rot: calc(-1 * var(--tilt));
+        --cycle: 12.5%;           /* 斑马纹一个周期宽度（加粗） */
     }
 
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; }
 
     body {
-      background: #ffffff;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
-      overflow: hidden;
-      height: 100vh;
-      width: 100vw;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+        background: var(--white);
+        overflow: hidden;
     }
 
-    /* ========== 底层斑马纹 ========== */
+    /* ========== 第 1 层：粗斑马纹，匀速向右 ========== */
     .stripes {
-      position: fixed;
-      inset: 0;
-      background: repeating-linear-gradient(
-        90deg,
-        #d0d0d0 0,
-        #d0d0d0 var(--stripe-width),
-        #ffffff var(--stripe-width),
-        #ffffff calc(var(--stripe-width) * 2)
-      );
-      background-size: calc(var(--stripe-width) * 2) 100%;
-      animation: move-stripes 1.5s linear infinite;
-      z-index: 0;
+        position: fixed; inset: 0; z-index: 1;
+        background: repeating-linear-gradient(90deg,
+            var(--stripe-gray) 0 45%,
+            var(--white) 45% 100%);
+        background-size: var(--cycle) 100%;
+        animation: slide 5s linear infinite;
+    }
+    @keyframes slide {
+        from { background-position: 0 0; }
+        to   { background-position: 12.5vw 0; }  /* 正好一个周期，无缝循环 */
     }
 
-    @keyframes move-stripes {
-      from { background-position-x: 0; }
-      to   { background-position-x: calc(var(--stripe-width) * 2); }
+    /* ========== 第 2 层：4 条白色蒙版（切割条纹成平行四边形） ========== */
+    .mask {
+        position: fixed; z-index: 2;
+        background: var(--white);
+        transform: translate(-50%, -50%) rotate(var(--rot));
+        pointer-events: none;
+    }
+    .mask-a { left: 16%; top: 24%; width: 46vw; height: 15vh; }
+    .mask-b { left: 36%; top: 46%; width: 62vw; height: 20vh; }
+    .mask-c { left: 57%; top: 63%; width: 62vw; height: 20vh; }
+    .mask-d { left: 82%; top: 80%; width: 46vw; height: 15vh; }
+
+    /* ========== 第 3 层：202020 圆角按钮 ========== */
+    .card {
+        position: fixed; z-index: 3;
+        width: 23%; height: 15vh;
+        background: var(--card-bg);
+        color: var(--white);
+        border-radius: 1.1vw;
+        transform: translate(-50%, -50%) rotate(var(--rot));
+        box-shadow: 0 1vh 2.2vh rgba(32, 32, 32, .22);   /* 柔和阴影 */
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center; gap: 1vh;
+        text-decoration: none;
+        transition: transform .35s cubic-bezier(.2, .7, .3, 1), box-shadow .35s;
+    }
+    /* 悬停微交互：垂直上浮 + 阴影加深 */
+    .card:hover {
+        transform: translate(-50%, -50%) translateY(-1.4vh) rotate(var(--rot));
+        box-shadow: 0 2.2vh 3.6vh rgba(32, 32, 32, .3);
+    }
+    .card h2 {
+        font-size: clamp(1.05rem, 2vw, 1.6rem);
+        font-weight: 700; color: var(--white);
+    }
+    .card p {
+        font-size: clamp(.72rem, 1.1vw, .95rem);
+        color: var(--white); opacity: .85;
     }
 
-    /* ========== 旋转遮罩容器 ========== */
-    .mask-container {
-      position: fixed;
-      left: 50%;
-      top: 50%;
-      width: 200vmax;
-      height: 200vmax;
-      transform: translate(-50%, -50%) rotate(var(--angle));
-      display: flex;
-      flex-direction: row;
-      gap: var(--gap);
-      z-index: 1;
-      pointer-events: none; /* 容器不拦截点击，子元素手动开启 */
+    /* ========== 第 3 层：纯倾斜文字（标题 / 其他网页） ========== */
+    .word {
+        position: fixed; z-index: 3;
+        color: var(--card-bg);
+        font-size: clamp(1.6rem, 3.6vw, 3rem);
+        font-weight: 800;
+        transform: translate(-50%, -50%) rotate(var(--rot));
+        text-decoration: none;
+        transition: opacity .25s;
     }
+    .word:hover { opacity: .7; }
 
-    .mask-strip {
-      flex: 0 0 var(--mask-width);
-      background: #ffffff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      pointer-events: auto; /* 允许交互 */
-    }
+    /* ========== 定位（全部百分比） ========== */
+    .pos-title { left: 13%; top: 22%; }
+    .pos-i     { left: 21%; top: 50%; }
+    .pos-d     { left: 45%; top: 41%; }
+    .pos-e     { left: 43%; top: 68%; }
+    .pos-p     { left: 66%; top: 59%; }
+    .pos-more  { left: 84%; top: 82%; }
 
-    /* 各条带的内容位置调整 */
-    .strip-synapse {
-      justify-content: flex-start;
-      padding-top: 42vh;
+    /* ========== 移动端适配 ========== */
+    @media (max-width: 768px) {
+        .card { width: 42%; height: 12vh; border-radius: 3vw; }
+        .mask-a { left: 30%; top: 12%; width: 70vw; height: 10vh; }
+        .mask-b { left: 50%; top: 27%; width: 95vw; height: 14vh; }
+        .mask-c { left: 50%; top: 49%; width: 95vw; height: 14vh; }
+        .mask-d { left: 66%; top: 82%; width: 70vw; height: 10vh; }
+        .pos-title { left: 26%; top: 10%; }
+        .pos-i { left: 30%; top: 30%; }
+        .pos-d { left: 72%; top: 24%; }
+        .pos-e { left: 30%; top: 52%; }
+        .pos-p { left: 72%; top: 46%; }
+        .pos-more { left: 70%; top: 80%; }
     }
-
-    .strip-buttons-left,
-    .strip-buttons-right {
-      justify-content: center;
-      gap: 18vh;             /* 两个按钮在条带中心上下分布 */
-    }
-
-    .strip-more {
-      justify-content: flex-end;
-      padding-bottom: 42vh;
-    }
-
-    /* ========== 按钮样式 ========== */
-    .btn {
-      width: 90%;
-      background: #202020;
-      color: #ffffff;
-      border-radius: 12px;
-      text-align: center;
-      padding: 1.5vmin 0;
-      text-decoration: none;
-      display: block;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);  /* 常态阴影，漂浮感 */
-      transition: transform 0.25s ease, box-shadow 0.25s ease;
-      pointer-events: auto;
-    }
-
-    .btn:hover {
-      transform: translate(6px, -6px);            /* 大陆漂移微交互 */
-      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
-    }
-
-    .btn .title {
-      display: block;
-      font-size: clamp(0.9rem, 2.2vmin, 1.4rem);
-      font-weight: 600;
-      line-height: 1.2;
-    }
-
-    .btn .desc {
-      display: block;
-      font-size: clamp(0.7rem, 1.4vmin, 0.9rem);
-      opacity: 0.85;
-      margin-top: 0.5vmin;
-    }
-
-    .text-link {
-      font-size: clamp(1.2rem, 3vmin, 2rem);
-      font-weight: 700;
-      color: #202020;
-      text-decoration: none;
-      pointer-events: auto;
-    }
-
-    .text-link:hover {
-      text-decoration: underline;
-    }
-  </style>
+</style>
 </head>
 <body>
-  <!-- 底层斑马纹 -->
-  <div class="stripes"></div>
+    <!-- 第 1 层：粗斑马纹 -->
+    <div class="stripes"></div>
 
-  <!-- 旋转遮罩 + 内容 -->
-  <div class="mask-container" id="maskContainer">
-    <!-- 左上：Synapse -->
-    <div class="mask-strip strip-synapse">
-      <a class="text-link" href="https://github.com/GumingDilian-hub/synapse/" target="_blank" rel="noopener">Synapse</a>
-    </div>
+    <!-- 第 2 层：4 条白色蒙版 -->
+    <div class="mask mask-a"></div>
+    <div class="mask mask-b"></div>
+    <div class="mask mask-c"></div>
+    <div class="mask mask-d"></div>
 
-    <!-- 中间左：input & print -->
-    <div class="mask-strip strip-buttons-left">
-      <a class="btn" href="https://gumingdilian-hub.github.io/input/" target="_blank" rel="noopener">
-        <span class="title">input</span>
-        <span class="desc">deepseek 最可爱啦～</span>
-      </a>
-      <a class="btn" href="https://gumingdilian-hub.github.io/print/" target="_blank" rel="noopener">
-        <span class="title">print</span>
-        <span class="desc">deepseek 最可爱啦～</span>
-      </a>
-    </div>
+    <!-- 第 3 层：q 标题（纯文字） -->
+    <a href="#" class="word pos-title">网页标题</a>
 
-    <!-- 中间右：dendrites & axons -->
-    <div class="mask-strip strip-buttons-right">
-      <a class="btn" href="https://gumingdilian-hub.github.io/dendrites/" target="_blank" rel="noopener">
-        <span class="title">dendrites</span>
-        <span class="desc">deepseek 最可爱啦～</span>
-      </a>
-      <a class="btn" href="https://gumingdilian-hub.github.io/axons/" target="_blank" rel="noopener">
-        <span class="title">axons</span>
-        <span class="desc">deepseek 最可爱啦～</span>
-      </a>
-    </div>
+    <!-- i / d / e / p 四个按钮，贴在中间两条蒙版上 -->
+    <a class="card pos-i" href="https://gumingdilian-hub.github.io/input/">
+        <h2>Input</h2><p>项目简介文字占位</p>
+    </a>
+    <a class="card pos-d" href="https://gumingdilian-hub.github.io/dendrites/">
+        <h2>Dendrites</h2><p>项目简介文字占位</p>
+    </a>
+    <a class="card pos-e" href="https://gumingdilian-hub.github.io/axons/">
+        <h2>Axons</h2><p>项目简介文字占位</p>
+    </a>
+    <a class="card pos-p" href="https://gumingdilian-hub.github.io/print/">
+        <h2>Print</h2><p>项目简介文字占位</p>
+    </a>
 
-    <!-- 右下：more -->
-    <div class="mask-strip strip-more">
-      <a class="text-link" href="more.html">more</a>
-    </div>
-  </div>
+    <!-- w 其他网页（纯文字） -->
+    <a href="more.html" class="word pos-more">其他网页</a>
 
-  <script>
-    // 根据视口宽高动态计算对角线倾斜角
-    function setAngle() {
-      const angle = Math.atan2(-window.innerHeight, window.innerWidth) * (180 / Math.PI);
-      document.documentElement.style.setProperty('--angle', angle + 'deg');
-    }
-
-    setAngle();
-    window.addEventListener('resize', setAngle);
-  </script>
+    <script>
+        // 开局测量屏幕分辨率，arctan(高/宽) 得对角线角度
+        (function () {
+            function setTilt() {
+                var a = Math.atan2(window.innerHeight, window.innerWidth) * 180 / Math.PI;
+                document.documentElement.style.setProperty('--tilt', a.toFixed(2) + 'deg');
+            }
+            setTilt();
+            window.addEventListener('resize', setTilt);
+        })();
+    </script>
 </body>
 </html>
