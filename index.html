@@ -27,8 +27,10 @@
         /* 斑马纹背景层 */
         .zebra-bg {
             position: absolute;
-            width: 300%;
+            width: 400%;
             height: 100%;
+            left: 0;
+            top: 0;
             background: repeating-linear-gradient(
                 90deg,
                 white 0px,
@@ -51,12 +53,12 @@
             height: 100%;
             top: 0;
             left: 0;
+            pointer-events: none;
         }
 
         .overlay-shape {
             position: absolute;
             background: white;
-            transform-origin: center center;
         }
 
         /* 卡片容器 */
@@ -77,62 +79,47 @@
             justify-content: center;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            transform-origin: center center;
+            text-decoration: none;
         }
 
         /* 按钮卡片（有背景） */
         .card-button {
             background: #b8b8b8;
             border-radius: 12px;
-            padding: 20px 30px;
+            padding: 25px 35px;
             box-shadow: 0 4px 12px rgba(32, 32, 32, 0.15);
         }
 
         .card-button:hover {
-            transform: var(--tilt-rotate) translateY(-8px) scale(1.02);
             box-shadow: 0 12px 28px rgba(32, 32, 32, 0.25);
-        }
-
-        .card-button:active {
-            transform: var(--tilt-rotate) translateY(-4px) scale(0.98);
-            box-shadow: 0 6px 16px rgba(32, 32, 32, 0.2);
         }
 
         /* 文字卡片（无背景） */
         .card-text {
             background: transparent;
-            padding: 10px 20px;
-        }
-
-        .card-text:hover {
-            transform: var(--tilt-rotate) scale(1.05);
+            padding: 15px 25px;
         }
 
         /* 卡片标题 */
         .card-title {
             color: #202020;
-            font-size: clamp(1rem, 2.5vw, 1.5rem);
+            font-size: clamp(1.2rem, 3vw, 2rem);
             font-weight: 600;
             text-align: center;
             line-height: 1.2;
+            text-decoration: none;
+            display: block;
         }
 
         /* 卡片简介 */
         .card-desc {
             color: #ffffff;
-            font-size: clamp(0.75rem, 1.8vw, 1rem);
-            margin-top: 8px;
+            font-size: clamp(0.8rem, 2vw, 1.1rem);
+            margin-top: 10px;
             text-align: center;
             line-height: 1.4;
-            max-width: 200px;
-        }
-
-        /* 链接样式 */
-        .card-link {
             text-decoration: none;
             display: block;
-            width: 100%;
-            height: 100%;
         }
     </style>
 </head>
@@ -145,45 +132,12 @@
         <div class="overlay-layer" id="overlayLayer"></div>
         
         <!-- 卡片容器 -->
-        <div class="cards-container" id="cardsContainer">
-            <!-- q: 网页标题（文字卡片） -->
-            <a href="#" class="card card-text" id="card-q">
-                <div class="card-title">My Projects Hub</div>
-            </a>
-            
-            <!-- i: input（按钮卡片） -->
-            <a href="https://gumingdilian-hub.github.io/input/" class="card card-button" id="card-i">
-                <div class="card-title">input</div>
-                <div class="card-desc">Project description placeholder</div>
-            </a>
-            
-            <!-- d: Dendrites（按钮卡片） -->
-            <a href="https://gumingdilian-hub.github.io/dendrites/" class="card card-button" id="card-d">
-                <div class="card-title">Dendrites</div>
-                <div class="card-desc">Project description placeholder</div>
-            </a>
-            
-            <!-- e: Axons（按钮卡片） -->
-            <a href="https://gumingdilian-hub.github.io/axons/" class="card card-button" id="card-e">
-                <div class="card-title">Axons</div>
-                <div class="card-desc">Project description placeholder</div>
-            </a>
-            
-            <!-- p: print（按钮卡片） -->
-            <a href="https://gumingdilian-hub.github.io/print/" class="card card-button" id="card-p">
-                <div class="card-title">print</div>
-                <div class="card-desc">Project description placeholder</div>
-            </a>
-            
-            <!-- w: 其他网页（文字卡片） -->
-            <a href="more.html" class="card card-text" id="card-w">
-                <div class="card-title">其他网页</div>
-            </a>
-        </div>
+        <div class="cards-container" id="cardsContainer"></div>
     </div>
 
     <script>
-        // 动态计算角度和布局
+        let currentAngle = 0;
+
         function calculateAndApplyLayout() {
             const vw = window.innerWidth;
             const vh = window.innerHeight;
@@ -191,78 +145,151 @@
             // 计算对角线角度（左下到右上）
             const angleRad = Math.atan2(vh, vw);
             const angleDeg = angleRad * (180 / Math.PI);
+            currentAngle = angleDeg;
             
-            // 设置CSS变量
-            document.documentElement.style.setProperty('--tilt-angle', `${angleDeg}deg`);
-            document.documentElement.style.setProperty('--tilt-rotate', `rotate(${-angleDeg}deg)`);
+            // 计算卡片尺寸（响应式）
+            const baseUnit = Math.min(vw, vh) / 12;
+            const cardWidth = baseUnit * 3;
+            const cardHeight = baseUnit * 2;
             
-            // 计算卡片尺寸（响应式，基于屏幕宽度）
-            const baseUnit = Math.min(vw, vh) / 10;
-            const cardWidth = baseUnit * 2.5;
-            const cardHeight = baseUnit * 1.2;
-            
-            // 创建覆板（平行四边形视觉假象）
+            // 创建覆板
             createOverlays(vw, vh, angleRad, baseUnit);
             
-            // 定位卡片
-            positionCards(vw, vh, cardWidth, cardHeight, angleDeg);
+            // 创建并定位卡片
+            createCards(vw, vh, cardWidth, cardHeight, angleDeg);
         }
 
         function createOverlays(vw, vh, angleRad, baseUnit) {
             const overlayLayer = document.getElementById('overlayLayer');
             overlayLayer.innerHTML = '';
             
-            // 创建多个覆板，形成平行四边形阵列
-            const rows = Math.ceil(vh / (baseUnit * 0.8)) + 2;
-            const cols = Math.ceil(vw / (baseUnit * 1.2)) + 2;
+            const angleDeg = -angleRad * (180 / Math.PI);
+            const shapeWidth = baseUnit * 2;
+            const shapeHeight = baseUnit * 4;
+            const spacingX = baseUnit * 1.5;
+            const spacingY = baseUnit * 1;
             
-            for (let i = -1; i < rows; i++) {
-                for (let j = -1; j < cols; j++) {
+            const rows = Math.ceil(vh / spacingY) + 4;
+            const cols = Math.ceil(vw / spacingX) + 4;
+            
+            for (let i = -2; i < rows; i++) {
+                for (let j = -2; j < cols; j++) {
                     const overlay = document.createElement('div');
                     overlay.className = 'overlay-shape';
                     
-                    const width = baseUnit * 1.5;
-                    const height = baseUnit * 3;
-                    const x = j * baseUnit * 1.2 - baseUnit;
-                    const y = i * baseUnit * 0.8 - baseUnit;
+                    const x = j * spacingX;
+                    const y = i * spacingY;
                     
-                    overlay.style.width = `${width}px`;
-                    overlay.style.height = `${height}px`;
+                    overlay.style.width = `${shapeWidth}px`;
+                    overlay.style.height = `${shapeHeight}px`;
                     overlay.style.left = `${x}px`;
                     overlay.style.top = `${y}px`;
-                    overlay.style.transform = `rotate(${-angleRad * (180/Math.PI)}deg)`;
+                    overlay.style.transform = `rotate(${angleDeg}deg)`;
                     
                     overlayLayer.appendChild(overlay);
                 }
             }
         }
 
-        function positionCards(vw, vh, cardWidth, cardHeight, angleDeg) {
+        function createCards(vw, vh, cardWidth, cardHeight, angleDeg) {
+            const container = document.getElementById('cardsContainer');
+            container.innerHTML = '';
+            
             const cards = [
-                { id: 'card-q', xRatio: 0.08, yRatio: 0.12, type: 'text' },
-                { id: 'card-i', xRatio: 0.20, yRatio: 0.35, type: 'button' },
-                { id: 'card-d', xRatio: 0.45, yRatio: 0.22, type: 'button' },
-                { id: 'card-e', xRatio: 0.50, yRatio: 0.55, type: 'button' },
-                { id: 'card-p', xRatio: 0.72, yRatio: 0.42, type: 'button' },
-                { id: 'card-w', xRatio: 0.82, yRatio: 0.72, type: 'text' }
+                { 
+                    id: 'card-q', 
+                    title: 'My Projects Hub', 
+                    desc: '', 
+                    xRatio: 0.1, 
+                    yRatio: 0.15, 
+                    type: 'text',
+                    href: '#'
+                },
+                { 
+                    id: 'card-i', 
+                    title: 'input', 
+                    desc: 'Project description placeholder', 
+                    xRatio: 0.25, 
+                    yRatio: 0.4, 
+                    type: 'button',
+                    href: 'https://gumingdilian-hub.github.io/input/'
+                },
+                { 
+                    id: 'card-d', 
+                    title: 'Dendrites', 
+                    desc: 'Project description placeholder', 
+                    xRatio: 0.5, 
+                    yRatio: 0.25, 
+                    type: 'button',
+                    href: 'https://gumingdilian-hub.github.io/dendrites/'
+                },
+                { 
+                    id: 'card-e', 
+                    title: 'Axons', 
+                    desc: 'Project description placeholder', 
+                    xRatio: 0.55, 
+                    yRatio: 0.6, 
+                    type: 'button',
+                    href: 'https://gumingdilian-hub.github.io/axons/'
+                },
+                { 
+                    id: 'card-p', 
+                    title: 'print', 
+                    desc: 'Project description placeholder', 
+                    xRatio: 0.75, 
+                    yRatio: 0.45, 
+                    type: 'button',
+                    href: 'https://gumingdilian-hub.github.io/print/'
+                },
+                { 
+                    id: 'card-w', 
+                    title: '其他网页', 
+                    desc: '', 
+                    xRatio: 0.85, 
+                    yRatio: 0.75, 
+                    type: 'text',
+                    href: 'more.html'
+                }
             ];
             
-            cards.forEach(card => {
-                const element = document.getElementById(card.id);
-                const x = vw * card.xRatio;
-                const y = vh * card.yRatio;
+            cards.forEach(cardData => {
+                const card = document.createElement('a');
+                card.className = `card card-${cardData.type}`;
+                card.href = cardData.href;
                 
-                element.style.width = card.type === 'button' ? `${cardWidth}px` : 'auto';
-                element.style.left = `${x}px`;
-                element.style.top = `${y}px`;
-                element.style.transform = `translate(-50%, -50%) rotate(${-angleDeg}deg)`;
+                const x = vw * cardData.xRatio;
+                const y = vh * cardData.yRatio;
+                
+                card.innerHTML = `
+                    <div class="card-title">${cardData.title}</div>
+                    ${cardData.desc ? `<div class="card-desc">${cardData.desc}</div>` : ''}
+                `;
+                
+                card.style.left = `${x}px`;
+                card.style.top = `${y}px`;
+                card.style.transform = `translate(-50%, -50%) rotate(${-angleDeg}deg)`;
+                
+                // 微交互
+                card.addEventListener('mouseenter', () => {
+                    if (cardData.type === 'button') {
+                        card.style.transform = `translate(-50%, -60%) rotate(${-angleDeg}deg) scale(1.05)`;
+                    } else {
+                        card.style.transform = `translate(-50%, -60%) rotate(${-angleDeg}deg) scale(1.1)`;
+                    }
+                });
+                
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = `translate(-50%, -50%) rotate(${-angleDeg}deg)`;
+                });
+                
+                container.appendChild(card);
             });
         }
 
         // 初始化和响应式处理
         window.addEventListener('resize', () => {
             clearTimeout(window.resizeTimer);
-            window.resizeTimer = setTimeout(calculateAndApplyLayout, 100);
+            window.resizeTimer = setTimeout(calculateAndApplyLayout, 150);
         });
 
         // 页面加载完成后计算布局
