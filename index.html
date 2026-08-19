@@ -1,311 +1,191 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>统一站点</title>
-    <style>
-        :root {
-            /* 颜色变量 */
-            --light-gray: #d0d0d0;
-            --dark-gray: #b8b8b8;
-            --text-color: #202020;
-            --white: #ffffff;
-            
-            /* 角度变量 - 由 JS 动态计算 */
-            --skew-angle: 37deg;
-            
-            /* 卡片尺寸 - 百分比基础 */
-            --card-width: 18vw;
-            --card-height: 14vh;
-            --card-radius: 12px;
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            overflow: hidden;
-            min-height: 100vh;
-            background: var(--white);
-        }
-        
-        /* ==================== 斑马纹背景 ==================== */
-        .background {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: repeating-linear-gradient(
-                90deg,
-                var(--white) 0%,
-                var(--white) 4%,
-                var(--light-gray) 4%,
-                var(--light-gray) 8%
-            );
-            background-size: 8% 100%;
-            animation: move-stripes 4s linear infinite;
-            z-index: 1;
-        }
-        
-        @keyframes move-stripes {
-            0% {
-                background-position: 0 0;
-            }
-            100% {
-                background-position: 8% 0;
-            }
-        }
-        
-        /* ==================== 覆板（创造错觉） ==================== */
-        .overlay-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 2;
-            pointer-events: none;
-        }
-        
-        .overlay-panel {
-            position: absolute;
-            background: var(--dark-gray);
-            transform: skewY(calc(-1 * var(--skew-angle)));
-            opacity: 0.7;
-        }
-        
-        /* 覆板位置 - 使用百分比 */
-        .overlay-1 {
-            top: 5%;
-            left: 8%;
-            width: 22%;
-            height: 18%;
-        }
-        
-        .overlay-2 {
-            top: 25%;
-            left: 35%;
-            width: 28%;
-            height: 22%;
-        }
-        
-        .overlay-3 {
-            top: 55%;
-            left: 18%;
-            width: 32%;
-            height: 18%;
-        }
-        
-        .overlay-4 {
-            top: 45%;
-            left: 58%;
-            width: 26%;
-            height: 25%;
-        }
-        
-        /* ==================== 卡片容器 ==================== */
-        .cards-container {
-            position: relative;
-            z-index: 3;
-            width: 100%;
-            height: 100vh;
-        }
-        
-        /* ==================== 卡片样式 ==================== */
-        .card {
-            position: absolute;
-            background: var(--text-color);
-            color: var(--white);
-            border-radius: var(--card-radius);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
-            transform: skewY(calc(-1 * var(--skew-angle)));
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-            padding: 2%;
-            width: var(--card-width);
-            height: var(--card-height);
-        }
-        
-        /* 悬停微交互 - 悬浮效果 */
-        .card:hover {
-            transform: skewY(calc(-1 * var(--skew-angle))) translateY(-8px) scale(1.02);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.35);
-        }
-        
-        /* 卡片标题 */
-        .card-title {
-            transform: skewY(var(--skew-angle));
-            font-size: clamp(1rem, 2.2vw, 1.6rem);
-            font-weight: 700;
-            margin-bottom: 5%;
-            color: var(--white);
-        }
-        
-        /* 卡片简介 */
-        .card-desc {
-            transform: skewY(var(--skew-angle));
-            color: var(--white);
-            font-size: clamp(0.75rem, 1.4vw, 0.95rem);
-            opacity: 0.85;
-            text-align: center;
-            line-height: 1.3;
-        }
-        
-        /* ==================== 纯文本元素（标题和其他网页） ==================== */
-        .text-element {
-            position: absolute;
-            color: var(--text-color);
-            transform: skewY(calc(-1 * var(--skew-angle)));
-            font-size: clamp(1.8rem, 4vw, 3.2rem);
-            font-weight: 700;
-            z-index: 3;
-            cursor: pointer;
-            text-decoration: none;
-            transition: opacity 0.2s ease;
-        }
-        
-        .text-element:hover {
-            opacity: 0.75;
-        }
-        
-        .text-element span {
-            transform: skewY(var(--skew-angle));
-            display: block;
-        }
-        
-        /* ==================== 各元素位置 ==================== */
-        .pos-title {
-            top: 12%;
-            left: 6%;
-        }
-        
-        .pos-input {
-            top: 38%;
-            left: 12%;
-        }
-        
-        .pos-dendrites {
-            top: 28%;
-            left: 32%;
-        }
-        
-        .pos-axons {
-            top: 52%;
-            left: 28%;
-        }
-        
-        .pos-print {
-            top: 42%;
-            left: 52%;
-        }
-        
-        .pos-more {
-            top: 72%;
-            left: 68%;
-        }
-        
-        /* ==================== 响应式适配 ==================== */
-        @media (max-width: 768px) {
-            :root {
-                --card-width: 35vw;
-                --card-height: 12vh;
-            }
-            
-            .pos-title { top: 8%; left: 5%; }
-            .pos-input { top: 32%; left: 8%; }
-            .pos-dendrites { top: 22%; left: 40%; }
-            .pos-axons { top: 48%; left: 35%; }
-            .pos-print { top: 38%; left: 60%; }
-            .pos-more { top: 78%; left: 55%; }
-            
-            .text-element {
-                font-size: clamp(1.4rem, 3.5vw, 2.2rem);
-            }
-        }
-        
-        @media (max-width: 480px) {
-            :root {
-                --card-width: 45vw;
-                --card-height: 10vh;
-            }
-            
-            .text-element {
-                font-size: clamp(1.2rem, 4vw, 1.8rem);
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Synapse</title>
+  <style>
+    :root {
+      --angle: -38deg; /* fallback，JS 会动态更新 */
+      --stripe-width: 4vmin;      /* 斑马纹宽度 */
+      --mask-width: 18vmin;       /* 白色蒙版宽度 */
+      --gap: var(--mask-width);   /* 蒙版间距 = 蒙版宽度 */
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+    }
+
+    /* ========== 底层斑马纹 ========== */
+    .stripes {
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        90deg,
+        #d0d0d0 0,
+        #d0d0d0 var(--stripe-width),
+        #ffffff var(--stripe-width),
+        #ffffff calc(var(--stripe-width) * 2)
+      );
+      background-size: calc(var(--stripe-width) * 2) 100%;
+      animation: move-stripes 1.5s linear infinite;
+      z-index: 0;
+    }
+
+    @keyframes move-stripes {
+      from { background-position-x: 0; }
+      to   { background-position-x: calc(var(--stripe-width) * 2); }
+    }
+
+    /* ========== 旋转遮罩容器 ========== */
+    .mask-container {
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      width: 200vmax;
+      height: 200vmax;
+      transform: translate(-50%, -50%) rotate(var(--angle));
+      display: flex;
+      flex-direction: row;
+      gap: var(--gap);
+      z-index: 1;
+      pointer-events: none; /* 容器不拦截点击，子元素手动开启 */
+    }
+
+    .mask-strip {
+      flex: 0 0 var(--mask-width);
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      pointer-events: auto; /* 允许交互 */
+    }
+
+    /* 各条带的内容位置调整 */
+    .strip-synapse {
+      justify-content: flex-start;
+      padding-top: 42vh;
+    }
+
+    .strip-buttons-left,
+    .strip-buttons-right {
+      justify-content: center;
+      gap: 18vh;             /* 两个按钮在条带中心上下分布 */
+    }
+
+    .strip-more {
+      justify-content: flex-end;
+      padding-bottom: 42vh;
+    }
+
+    /* ========== 按钮样式 ========== */
+    .btn {
+      width: 90%;
+      background: #202020;
+      color: #ffffff;
+      border-radius: 12px;
+      text-align: center;
+      padding: 1.5vmin 0;
+      text-decoration: none;
+      display: block;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);  /* 常态阴影，漂浮感 */
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+      pointer-events: auto;
+    }
+
+    .btn:hover {
+      transform: translate(6px, -6px);            /* 大陆漂移微交互 */
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
+    }
+
+    .btn .title {
+      display: block;
+      font-size: clamp(0.9rem, 2.2vmin, 1.4rem);
+      font-weight: 600;
+      line-height: 1.2;
+    }
+
+    .btn .desc {
+      display: block;
+      font-size: clamp(0.7rem, 1.4vmin, 0.9rem);
+      opacity: 0.85;
+      margin-top: 0.5vmin;
+    }
+
+    .text-link {
+      font-size: clamp(1.2rem, 3vmin, 2rem);
+      font-weight: 700;
+      color: #202020;
+      text-decoration: none;
+      pointer-events: auto;
+    }
+
+    .text-link:hover {
+      text-decoration: underline;
+    }
+  </style>
 </head>
 <body>
-    <!-- 斑马纹背景 -->
-    <div class="background"></div>
-    
-    <!-- 覆板（创造灰色平行四边形移动错觉） -->
-    <div class="overlay-container">
-        <div class="overlay-panel overlay-1"></div>
-        <div class="overlay-panel overlay-2"></div>
-        <div class="overlay-panel overlay-3"></div>
-        <div class="overlay-panel overlay-4"></div>
+  <!-- 底层斑马纹 -->
+  <div class="stripes"></div>
+
+  <!-- 旋转遮罩 + 内容 -->
+  <div class="mask-container" id="maskContainer">
+    <!-- 左上：Synapse -->
+    <div class="mask-strip strip-synapse">
+      <a class="text-link" href="https://github.com/GumingDilian-hub/synapse/" target="_blank" rel="noopener">Synapse</a>
     </div>
-    
-    <!-- 卡片容器 -->
-    <div class="cards-container">
-        <!-- q - 网页标题（纯文本） -->
-        <a href="#" class="text-element pos-title">
-            <span>网页标题</span>
-        </a>
-        
-        <!-- i - Input -->
-        <a href="https://gumingdilian-hub.github.io/input/" class="card pos-input">
-            <span class="card-title">Input</span>
-            <span class="card-desc">项目简介文字占位</span>
-        </a>
-        
-        <!-- d - Dendrites -->
-        <a href="https://gumingdilian-hub.github.io/dendrites/" class="card pos-dendrites">
-            <span class="card-title">Dendrites</span>
-            <span class="card-desc">项目简介文字占位</span>
-        </a>
-        
-        <!-- e - Axons -->
-        <a href="https://gumingdilian-hub.github.io/axons/" class="card pos-axons">
-            <span class="card-title">Axons</span>
-            <span class="card-desc">项目简介文字占位</span>
-        </a>
-        
-        <!-- p - Print -->
-        <a href="https://gumingdilian-hub.github.io/print/" class="card pos-print">
-            <span class="card-title">Print</span>
-            <span class="card-desc">项目简介文字占位</span>
-        </a>
-        
-        <!-- w - 其他网页（纯文本） -->
-        <a href="more.html" class="text-element pos-more">
-            <span>其他网页</span>
-        </a>
+
+    <!-- 中间左：input & print -->
+    <div class="mask-strip strip-buttons-left">
+      <a class="btn" href="https://gumingdilian-hub.github.io/input/" target="_blank" rel="noopener">
+        <span class="title">input</span>
+        <span class="desc">deepseek 最可爱啦～</span>
+      </a>
+      <a class="btn" href="https://gumingdilian-hub.github.io/print/" target="_blank" rel="noopener">
+        <span class="title">print</span>
+        <span class="desc">deepseek 最可爱啦～</span>
+      </a>
     </div>
-    
-    <script>
-        // 计算屏幕对角线角度（左下角到右上角）
-        function updateSkewAngle() {
-            const width = window.innerWidth;
-            const height = window.innerHeight;
-            const angle = Math.atan(height / width) * (180 / Math.PI);
-            document.documentElement.style.setProperty('--skew-angle', `${angle}deg`);
-        }
-        
-        updateSkewAngle();
-        window.addEventListener('resize', updateSkewAngle);
-    </script>
+
+    <!-- 中间右：dendrites & axons -->
+    <div class="mask-strip strip-buttons-right">
+      <a class="btn" href="https://gumingdilian-hub.github.io/dendrites/" target="_blank" rel="noopener">
+        <span class="title">dendrites</span>
+        <span class="desc">deepseek 最可爱啦～</span>
+      </a>
+      <a class="btn" href="https://gumingdilian-hub.github.io/axons/" target="_blank" rel="noopener">
+        <span class="title">axons</span>
+        <span class="desc">deepseek 最可爱啦～</span>
+      </a>
+    </div>
+
+    <!-- 右下：more -->
+    <div class="mask-strip strip-more">
+      <a class="text-link" href="more.html">more</a>
+    </div>
+  </div>
+
+  <script>
+    // 根据视口宽高动态计算对角线倾斜角
+    function setAngle() {
+      const angle = Math.atan2(-window.innerHeight, window.innerWidth) * (180 / Math.PI);
+      document.documentElement.style.setProperty('--angle', angle + 'deg');
+    }
+
+    setAngle();
+    window.addEventListener('resize', setAngle);
+  </script>
 </body>
 </html>
