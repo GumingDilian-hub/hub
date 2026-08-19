@@ -39,13 +39,14 @@
     }
 
     /* ========== 第 2 层：白色蒙版 ==========
-       锚定左上角；rotate → 垂直偏移 --off → 沿带居中。
-       首尾：超厚 + 中心线穿角点 = 被屏幕裁成三角形
-       中间：按 span 比例排布 = 间隙恒定 */
+       关键：transform-origin: 0 0，旋转锚定左上角，几何计算才成立
+       首尾：超厚 + 中心线穿角点 = 裁成三角形
+       中间：按 span 比例 = 间隙恒定 */
     .mask {
         position: fixed; left: 0; top: 0; z-index: 2;
         width: 200vmax;
         background: var(--white);
+        transform-origin: 0 0;
         transform: rotate(var(--rot)) translateY(var(--off)) translateX(-50%);
     }
     .mask-a { --off: 0;                          height: 40vh; }  /* 左上三角形 */
