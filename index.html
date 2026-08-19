@@ -9,7 +9,8 @@
         --stripe-gray: #d0d0d0;
         --card-bg: #202020;
         --white: #ffffff;
-        --tilt: 37deg;                      /* JS 开局 arctan 实测覆写 */
+        --tilt: 37deg;                 /* JS 实测 arctan(高/宽) */
+        --span: 100vh;                 /* JS 实测 角-角 垂直跨度 */
         --rot: calc(-1 * var(--tilt));
         --cycle: 12.5%;
     }
@@ -37,19 +38,21 @@
         to   { background-position: 12.5vw 0; }
     }
 
-    /* ========== 第 2 层：无限延长的白色蒙版 ========== */
+    /* ========== 第 2 层：白色蒙版 ==========
+       全部锚定左上角，先旋转、再沿垂直方向偏移 --off。
+       首尾贴角 → 被屏幕裁成三角形；中间按 span 比例排布 → 间隙恒定 */
     .mask {
-        position: fixed; z-index: 2;
+        position: fixed; left: 0; top: 0; z-index: 2;
+        width: 200vmax;
         background: var(--white);
-        width: 200vmax;                     /* 远超屏幕对角线 = 视觉无限 */
-        transform: translate(-50%, -50%) rotate(var(--rot));
+        transform: rotate(var(--rot)) translateY(var(--off)) translateX(-50%);
     }
-    .mask-a { left: 16%; top: 24%; height: 15vh; }
-    .mask-b { left: 36%; top: 46%; height: 20vh; }
-    .mask-c { left: 57%; top: 63%; height: 20vh; }
-    .mask-d { left: 82%; top: 80%; height: 15vh; }
+    .mask-a { --off: 9vh;                          height: 14vh; }  /* 左上角三角形 */
+    .mask-b { --off: calc(var(--span) * 0.36);     height: 20vh; }
+    .mask-c { --off: calc(var(--span) * 0.64);     height: 20vh; }
+    .mask-d { --off: calc(var(--span) - 9vh);      height: 14vh; }  /* 右下角三角形 */
 
-    /* ========== 第 3 层：黑色按钮，钉在蒙版中心两侧 ========== */
+    /* ========== 第 3 层：黑色按钮，钉在蒙版上 ========== */
     .card {
         position: absolute; top: 50%; left: 50%;
         width: 22vw; height: 72%;
@@ -73,10 +76,10 @@
     .card h2 { font-size: clamp(1.05rem, 2vw, 1.6rem); font-weight: 700; color: var(--white); }
     .card p  { font-size: clamp(.72rem, 1.1vw, .95rem); color: var(--white); opacity: .85; }
 
-    /* ========== 纯倾斜文字，居中钉在首尾蒙版上 ========== */
+    /* ========== 纯倾斜文字 ========== */
     .word {
-        position: absolute; left: 50%; top: 50%;
-        transform: translate(-50%, -50%);
+        position: absolute; top: 50%; left: 50%;
+        transform: translate(-50%, -50%) translateX(var(--dx, 0));
         white-space: nowrap;
         color: var(--card-bg);
         font-size: clamp(1.6rem, 3.6vw, 3rem);
@@ -85,24 +88,24 @@
         transition: opacity .25s;
     }
     .word:hover { opacity: .7; }
+    .mask-a .word { --dx: 12vw; }   /* 从左上角沿蒙版滑入画面 */
+    .mask-d .word { --dx: -12vw; }  /* 从右下角沿蒙版滑入画面 */
 
     /* ========== 移动端适配 ========== */
     @media (max-width: 768px) {
-        .mask-a { left: 30%; top: 14%; height: 10vh; }
-        .mask-b { left: 45%; top: 28%; height: 15vh; }
-        .mask-c { left: 55%; top: 52%; height: 15vh; }
-        .mask-d { left: 70%; top: 80%; height: 10vh; }
+        .mask-a, .mask-d { height: 12vh; }
+        .mask-b, .mask-c { height: 16vh; }
         .card { width: 42vw; border-radius: 3vw; }
         .card-1 { --dx: -24vh; }
         .card-2 { --dx:  24vh; }
+        .mask-a .word { --dx: 14vh; }
+        .mask-d .word { --dx: -14vh; }
     }
 </style>
 </head>
 <body>
-    <!-- 第 1 层：粗斑马纹 -->
     <div class="stripes"></div>
 
-    <!-- 第 2 层：无限长白色蒙版 -->
     <div class="mask mask-a">
         <a href="#" class="word">网页标题</a>
     </div>
@@ -130,14 +133,18 @@
     </div>
 
     <script>
-        // 开局测量屏幕分辨率，arctan(高/宽) 得对角线角度
+        // 开局测量屏幕：arctan 得角度；角-角垂直跨度得 span
         (function () {
-            function setTilt() {
-                var a = Math.atan2(window.innerHeight, window.innerWidth) * 180 / Math.PI;
-                document.documentElement.style.setProperty('--tilt', a.toFixed(2) + 'deg');
+            function measure() {
+                var w = window.innerWidth, h = window.innerHeight;
+                var tilt = Math.atan2(h, w) * 180 / Math.PI;
+                var span = 2 * w * h / Math.hypot(w, h);   // 左上角到右下角的垂直距离
+                var s = document.documentElement.style;
+                s.setProperty('--tilt', tilt.toFixed(2) + 'deg');
+                s.setProperty('--span', span.toFixed(1) + 'px');
             }
-            setTilt();
-            window.addEventListener('resize', setTilt);
+            measure();
+            window.addEventListener('resize', measure);
         })();
     </script>
 </body>
