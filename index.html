@@ -3,301 +3,309 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Projects</title>
+    <title>统一站点</title>
     <style>
+        :root {
+            /* 颜色变量 */
+            --light-gray: #d0d0d0;
+            --dark-gray: #b8b8b8;
+            --text-color: #202020;
+            --white: #ffffff;
+            
+            /* 角度变量 - 由 JS 动态计算 */
+            --skew-angle: 37deg;
+            
+            /* 卡片尺寸 - 百分比基础 */
+            --card-width: 18vw;
+            --card-height: 14vh;
+            --card-radius: 12px;
+        }
+        
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
+        
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             overflow: hidden;
-            background: white;
+            min-height: 100vh;
+            background: var(--white);
         }
-
-        .container {
-            width: 100vw;
-            height: 100vh;
-            position: relative;
-            overflow: hidden;
-        }
-
-        /* 斑马纹背景层 */
-        .zebra-bg {
-            position: absolute;
-            width: 400%;
-            height: 100%;
-            left: 0;
+        
+        /* ==================== 斑马纹背景 ==================== */
+        .background {
+            position: fixed;
             top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background: repeating-linear-gradient(
                 90deg,
-                white 0px,
-                white 50px,
-                #d0d0d0 50px,
-                #d0d0d0 100px
+                var(--white) 0%,
+                var(--white) 4%,
+                var(--light-gray) 4%,
+                var(--light-gray) 8%
             );
-            animation: moveRight 2s linear infinite;
+            background-size: 8% 100%;
+            animation: move-stripes 4s linear infinite;
+            z-index: 1;
         }
-
-        @keyframes moveRight {
-            from { transform: translateX(0); }
-            to { transform: translateX(-100px); }
+        
+        @keyframes move-stripes {
+            0% {
+                background-position: 0 0;
+            }
+            100% {
+                background-position: 8% 0;
+            }
         }
-
-        /* 覆板层 - 制造平行四边形视觉假象 */
-        .overlay-layer {
-            position: absolute;
-            width: 100%;
-            height: 100%;
+        
+        /* ==================== 覆板（创造错觉） ==================== */
+        .overlay-container {
+            position: fixed;
             top: 0;
             left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
             pointer-events: none;
         }
-
-        .overlay-shape {
+        
+        .overlay-panel {
             position: absolute;
-            background: white;
+            background: var(--dark-gray);
+            transform: skewY(calc(-1 * var(--skew-angle)));
+            opacity: 0.7;
         }
-
-        /* 卡片容器 */
+        
+        /* 覆板位置 - 使用百分比 */
+        .overlay-1 {
+            top: 5%;
+            left: 8%;
+            width: 22%;
+            height: 18%;
+        }
+        
+        .overlay-2 {
+            top: 25%;
+            left: 35%;
+            width: 28%;
+            height: 22%;
+        }
+        
+        .overlay-3 {
+            top: 55%;
+            left: 18%;
+            width: 32%;
+            height: 18%;
+        }
+        
+        .overlay-4 {
+            top: 45%;
+            left: 58%;
+            width: 26%;
+            height: 25%;
+        }
+        
+        /* ==================== 卡片容器 ==================== */
         .cards-container {
-            position: absolute;
+            position: relative;
+            z-index: 3;
             width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
+            height: 100vh;
         }
-
-        /* 通用卡片样式 */
+        
+        /* ==================== 卡片样式 ==================== */
         .card {
             position: absolute;
+            background: var(--text-color);
+            color: var(--white);
+            border-radius: var(--card-radius);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+            transform: skewY(calc(-1 * var(--skew-angle)));
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             text-decoration: none;
+            padding: 2%;
+            width: var(--card-width);
+            height: var(--card-height);
         }
-
-        /* 按钮卡片（有背景） */
-        .card-button {
-            background: #b8b8b8;
-            border-radius: 12px;
-            padding: 25px 35px;
-            box-shadow: 0 4px 12px rgba(32, 32, 32, 0.15);
+        
+        /* 悬停微交互 - 悬浮效果 */
+        .card:hover {
+            transform: skewY(calc(-1 * var(--skew-angle))) translateY(-8px) scale(1.02);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.35);
         }
-
-        .card-button:hover {
-            box-shadow: 0 12px 28px rgba(32, 32, 32, 0.25);
-        }
-
-        /* 文字卡片（无背景） */
-        .card-text {
-            background: transparent;
-            padding: 15px 25px;
-        }
-
+        
         /* 卡片标题 */
         .card-title {
-            color: #202020;
-            font-size: clamp(1.2rem, 3vw, 2rem);
-            font-weight: 600;
-            text-align: center;
-            line-height: 1.2;
-            text-decoration: none;
-            display: block;
+            transform: skewY(var(--skew-angle));
+            font-size: clamp(1rem, 2.2vw, 1.6rem);
+            font-weight: 700;
+            margin-bottom: 5%;
+            color: var(--white);
         }
-
+        
         /* 卡片简介 */
         .card-desc {
-            color: #ffffff;
-            font-size: clamp(0.8rem, 2vw, 1.1rem);
-            margin-top: 10px;
+            transform: skewY(var(--skew-angle));
+            color: var(--white);
+            font-size: clamp(0.75rem, 1.4vw, 0.95rem);
+            opacity: 0.85;
             text-align: center;
-            line-height: 1.4;
+            line-height: 1.3;
+        }
+        
+        /* ==================== 纯文本元素（标题和其他网页） ==================== */
+        .text-element {
+            position: absolute;
+            color: var(--text-color);
+            transform: skewY(calc(-1 * var(--skew-angle)));
+            font-size: clamp(1.8rem, 4vw, 3.2rem);
+            font-weight: 700;
+            z-index: 3;
+            cursor: pointer;
             text-decoration: none;
+            transition: opacity 0.2s ease;
+        }
+        
+        .text-element:hover {
+            opacity: 0.75;
+        }
+        
+        .text-element span {
+            transform: skewY(var(--skew-angle));
             display: block;
+        }
+        
+        /* ==================== 各元素位置 ==================== */
+        .pos-title {
+            top: 12%;
+            left: 6%;
+        }
+        
+        .pos-input {
+            top: 38%;
+            left: 12%;
+        }
+        
+        .pos-dendrites {
+            top: 28%;
+            left: 32%;
+        }
+        
+        .pos-axons {
+            top: 52%;
+            left: 28%;
+        }
+        
+        .pos-print {
+            top: 42%;
+            left: 52%;
+        }
+        
+        .pos-more {
+            top: 72%;
+            left: 68%;
+        }
+        
+        /* ==================== 响应式适配 ==================== */
+        @media (max-width: 768px) {
+            :root {
+                --card-width: 35vw;
+                --card-height: 12vh;
+            }
+            
+            .pos-title { top: 8%; left: 5%; }
+            .pos-input { top: 32%; left: 8%; }
+            .pos-dendrites { top: 22%; left: 40%; }
+            .pos-axons { top: 48%; left: 35%; }
+            .pos-print { top: 38%; left: 60%; }
+            .pos-more { top: 78%; left: 55%; }
+            
+            .text-element {
+                font-size: clamp(1.4rem, 3.5vw, 2.2rem);
+            }
+        }
+        
+        @media (max-width: 480px) {
+            :root {
+                --card-width: 45vw;
+                --card-height: 10vh;
+            }
+            
+            .text-element {
+                font-size: clamp(1.2rem, 4vw, 1.8rem);
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container" id="container">
-        <!-- 斑马纹背景 -->
-        <div class="zebra-bg"></div>
-        
-        <!-- 覆板层（用于制造平行四边形视觉假象） -->
-        <div class="overlay-layer" id="overlayLayer"></div>
-        
-        <!-- 卡片容器 -->
-        <div class="cards-container" id="cardsContainer"></div>
+    <!-- 斑马纹背景 -->
+    <div class="background"></div>
+    
+    <!-- 覆板（创造灰色平行四边形移动错觉） -->
+    <div class="overlay-container">
+        <div class="overlay-panel overlay-1"></div>
+        <div class="overlay-panel overlay-2"></div>
+        <div class="overlay-panel overlay-3"></div>
+        <div class="overlay-panel overlay-4"></div>
     </div>
-
+    
+    <!-- 卡片容器 -->
+    <div class="cards-container">
+        <!-- q - 网页标题（纯文本） -->
+        <a href="#" class="text-element pos-title">
+            <span>网页标题</span>
+        </a>
+        
+        <!-- i - Input -->
+        <a href="https://gumingdilian-hub.github.io/input/" class="card pos-input">
+            <span class="card-title">Input</span>
+            <span class="card-desc">项目简介文字占位</span>
+        </a>
+        
+        <!-- d - Dendrites -->
+        <a href="https://gumingdilian-hub.github.io/dendrites/" class="card pos-dendrites">
+            <span class="card-title">Dendrites</span>
+            <span class="card-desc">项目简介文字占位</span>
+        </a>
+        
+        <!-- e - Axons -->
+        <a href="https://gumingdilian-hub.github.io/axons/" class="card pos-axons">
+            <span class="card-title">Axons</span>
+            <span class="card-desc">项目简介文字占位</span>
+        </a>
+        
+        <!-- p - Print -->
+        <a href="https://gumingdilian-hub.github.io/print/" class="card pos-print">
+            <span class="card-title">Print</span>
+            <span class="card-desc">项目简介文字占位</span>
+        </a>
+        
+        <!-- w - 其他网页（纯文本） -->
+        <a href="more.html" class="text-element pos-more">
+            <span>其他网页</span>
+        </a>
+    </div>
+    
     <script>
-        let currentAngle = 0;
-
-        function calculateAndApplyLayout() {
-            const vw = window.innerWidth;
-            const vh = window.innerHeight;
-            
-            // 计算对角线角度（左下到右上）
-            const angleRad = Math.atan2(vh, vw);
-            const angleDeg = angleRad * (180 / Math.PI);
-            currentAngle = angleDeg;
-            
-            // 计算卡片尺寸（响应式）
-            const baseUnit = Math.min(vw, vh) / 12;
-            const cardWidth = baseUnit * 3;
-            const cardHeight = baseUnit * 2;
-            
-            // 创建覆板
-            createOverlays(vw, vh, angleRad, baseUnit);
-            
-            // 创建并定位卡片
-            createCards(vw, vh, cardWidth, cardHeight, angleDeg);
+        // 计算屏幕对角线角度（左下角到右上角）
+        function updateSkewAngle() {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            const angle = Math.atan(height / width) * (180 / Math.PI);
+            document.documentElement.style.setProperty('--skew-angle', `${angle}deg`);
         }
-
-        function createOverlays(vw, vh, angleRad, baseUnit) {
-            const overlayLayer = document.getElementById('overlayLayer');
-            overlayLayer.innerHTML = '';
-            
-            const angleDeg = -angleRad * (180 / Math.PI);
-            const shapeWidth = baseUnit * 2;
-            const shapeHeight = baseUnit * 4;
-            const spacingX = baseUnit * 1.5;
-            const spacingY = baseUnit * 1;
-            
-            const rows = Math.ceil(vh / spacingY) + 4;
-            const cols = Math.ceil(vw / spacingX) + 4;
-            
-            for (let i = -2; i < rows; i++) {
-                for (let j = -2; j < cols; j++) {
-                    const overlay = document.createElement('div');
-                    overlay.className = 'overlay-shape';
-                    
-                    const x = j * spacingX;
-                    const y = i * spacingY;
-                    
-                    overlay.style.width = `${shapeWidth}px`;
-                    overlay.style.height = `${shapeHeight}px`;
-                    overlay.style.left = `${x}px`;
-                    overlay.style.top = `${y}px`;
-                    overlay.style.transform = `rotate(${angleDeg}deg)`;
-                    
-                    overlayLayer.appendChild(overlay);
-                }
-            }
-        }
-
-        function createCards(vw, vh, cardWidth, cardHeight, angleDeg) {
-            const container = document.getElementById('cardsContainer');
-            container.innerHTML = '';
-            
-            const cards = [
-                { 
-                    id: 'card-q', 
-                    title: 'My Projects Hub', 
-                    desc: '', 
-                    xRatio: 0.1, 
-                    yRatio: 0.15, 
-                    type: 'text',
-                    href: '#'
-                },
-                { 
-                    id: 'card-i', 
-                    title: 'input', 
-                    desc: 'Project description placeholder', 
-                    xRatio: 0.25, 
-                    yRatio: 0.4, 
-                    type: 'button',
-                    href: 'https://gumingdilian-hub.github.io/input/'
-                },
-                { 
-                    id: 'card-d', 
-                    title: 'Dendrites', 
-                    desc: 'Project description placeholder', 
-                    xRatio: 0.5, 
-                    yRatio: 0.25, 
-                    type: 'button',
-                    href: 'https://gumingdilian-hub.github.io/dendrites/'
-                },
-                { 
-                    id: 'card-e', 
-                    title: 'Axons', 
-                    desc: 'Project description placeholder', 
-                    xRatio: 0.55, 
-                    yRatio: 0.6, 
-                    type: 'button',
-                    href: 'https://gumingdilian-hub.github.io/axons/'
-                },
-                { 
-                    id: 'card-p', 
-                    title: 'print', 
-                    desc: 'Project description placeholder', 
-                    xRatio: 0.75, 
-                    yRatio: 0.45, 
-                    type: 'button',
-                    href: 'https://gumingdilian-hub.github.io/print/'
-                },
-                { 
-                    id: 'card-w', 
-                    title: '其他网页', 
-                    desc: '', 
-                    xRatio: 0.85, 
-                    yRatio: 0.75, 
-                    type: 'text',
-                    href: 'more.html'
-                }
-            ];
-            
-            cards.forEach(cardData => {
-                const card = document.createElement('a');
-                card.className = `card card-${cardData.type}`;
-                card.href = cardData.href;
-                
-                const x = vw * cardData.xRatio;
-                const y = vh * cardData.yRatio;
-                
-                card.innerHTML = `
-                    <div class="card-title">${cardData.title}</div>
-                    ${cardData.desc ? `<div class="card-desc">${cardData.desc}</div>` : ''}
-                `;
-                
-                card.style.left = `${x}px`;
-                card.style.top = `${y}px`;
-                card.style.transform = `translate(-50%, -50%) rotate(${-angleDeg}deg)`;
-                
-                // 微交互
-                card.addEventListener('mouseenter', () => {
-                    if (cardData.type === 'button') {
-                        card.style.transform = `translate(-50%, -60%) rotate(${-angleDeg}deg) scale(1.05)`;
-                    } else {
-                        card.style.transform = `translate(-50%, -60%) rotate(${-angleDeg}deg) scale(1.1)`;
-                    }
-                });
-                
-                card.addEventListener('mouseleave', () => {
-                    card.style.transform = `translate(-50%, -50%) rotate(${-angleDeg}deg)`;
-                });
-                
-                container.appendChild(card);
-            });
-        }
-
-        // 初始化和响应式处理
-        window.addEventListener('resize', () => {
-            clearTimeout(window.resizeTimer);
-            window.resizeTimer = setTimeout(calculateAndApplyLayout, 150);
-        });
-
-        // 页面加载完成后计算布局
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', calculateAndApplyLayout);
-        } else {
-            calculateAndApplyLayout();
-        }
+        
+        updateSkewAngle();
+        window.addEventListener('resize', updateSkewAngle);
     </script>
 </body>
 </html>
