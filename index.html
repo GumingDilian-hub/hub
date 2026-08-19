@@ -6,12 +6,12 @@
 <title>统一站点</title>
 <style>
     :root {
-        --stripe-gray: #d0d0d0;   /* 条纹灰 */
-        --card-bg: #202020;       /* 卡片黑 */
+        --stripe-gray: #d0d0d0;
+        --card-bg: #202020;
         --white: #ffffff;
-        --tilt: 37deg;            /* 由 JS 开局测量屏幕算 arctan 覆写 */
+        --tilt: 37deg;                      /* JS 开局 arctan 实测覆写 */
         --rot: calc(-1 * var(--tilt));
-        --cycle: 12.5%;           /* 斑马纹一个周期宽度（加粗） */
+        --cycle: 12.5%;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -34,82 +34,64 @@
     }
     @keyframes slide {
         from { background-position: 0 0; }
-        to   { background-position: 12.5vw 0; }  /* 正好一个周期，无缝循环 */
+        to   { background-position: 12.5vw 0; }
     }
 
-    /* ========== 第 2 层：4 条白色蒙版（切割条纹成平行四边形） ========== */
+    /* ========== 第 2 层：白色蒙版（父容器，负责旋转） ========== */
     .mask {
         position: fixed; z-index: 2;
         background: var(--white);
         transform: translate(-50%, -50%) rotate(var(--rot));
-        pointer-events: none;
     }
     .mask-a { left: 16%; top: 24%; width: 46vw; height: 15vh; }
-    .mask-b { left: 36%; top: 46%; width: 62vw; height: 20vh; }
-    .mask-c { left: 57%; top: 63%; width: 62vw; height: 20vh; }
+    .mask-b { left: 36%; top: 46%; width: 66vw; height: 20vh; }
+    .mask-c { left: 57%; top: 63%; width: 66vw; height: 20vh; }
     .mask-d { left: 82%; top: 80%; width: 46vw; height: 15vh; }
 
-    /* ========== 第 3 层：202020 圆角按钮 ========== */
+    /* ========== 第 3 层：黑色按钮，相对定位钉在蒙版上 ========== */
     .card {
-        position: fixed; z-index: 3;
-        width: 23%; height: 15vh;
+        position: absolute; top: 50%;
+        height: 72%; width: 42%;
+        transform: translateY(-50%);        /* 只负责垂直居中，旋转继承蒙版 */
         background: var(--card-bg);
         color: var(--white);
         border-radius: 1.1vw;
-        transform: translate(-50%, -50%) rotate(var(--rot));
-        box-shadow: 0 1vh 2.2vh rgba(32, 32, 32, .22);   /* 柔和阴影 */
+        box-shadow: 0 1vh 2.2vh rgba(32, 32, 32, .22);
         display: flex; flex-direction: column;
         align-items: center; justify-content: center; gap: 1vh;
         text-decoration: none;
         transition: transform .35s cubic-bezier(.2, .7, .3, 1), box-shadow .35s;
     }
-    /* 悬停微交互：垂直上浮 + 阴影加深 */
+    .card-1 { left: 5%; }
+    .card-2 { left: 53%; }
+
     .card:hover {
-        transform: translate(-50%, -50%) translateY(-1.4vh) rotate(var(--rot));
+        transform: translateY(calc(-50% - 1.4vh));
         box-shadow: 0 2.2vh 3.6vh rgba(32, 32, 32, .3);
     }
-    .card h2 {
-        font-size: clamp(1.05rem, 2vw, 1.6rem);
-        font-weight: 700; color: var(--white);
-    }
-    .card p {
-        font-size: clamp(.72rem, 1.1vw, .95rem);
-        color: var(--white); opacity: .85;
-    }
+    .card h2 { font-size: clamp(1.05rem, 2vw, 1.6rem); font-weight: 700; color: var(--white); }
+    .card p  { font-size: clamp(.72rem, 1.1vw, .95rem); color: var(--white); opacity: .85; }
 
-    /* ========== 第 3 层：纯倾斜文字（标题 / 其他网页） ========== */
+    /* ========== 纯倾斜文字，居中钉在首尾蒙版上 ========== */
     .word {
-        position: fixed; z-index: 3;
+        position: absolute; left: 50%; top: 50%;
+        transform: translate(-50%, -50%);
+        white-space: nowrap;
         color: var(--card-bg);
         font-size: clamp(1.6rem, 3.6vw, 3rem);
         font-weight: 800;
-        transform: translate(-50%, -50%) rotate(var(--rot));
         text-decoration: none;
         transition: opacity .25s;
     }
     .word:hover { opacity: .7; }
 
-    /* ========== 定位（全部百分比） ========== */
-    .pos-title { left: 13%; top: 22%; }
-    .pos-i     { left: 21%; top: 50%; }
-    .pos-d     { left: 45%; top: 41%; }
-    .pos-e     { left: 43%; top: 68%; }
-    .pos-p     { left: 66%; top: 59%; }
-    .pos-more  { left: 84%; top: 82%; }
-
-    /* ========== 移动端适配 ========== */
+    /* ========== 移动端：蒙版加长，按钮随蒙版自动适配 ========== */
     @media (max-width: 768px) {
-        .card { width: 42%; height: 12vh; border-radius: 3vw; }
-        .mask-a { left: 30%; top: 12%; width: 70vw; height: 10vh; }
-        .mask-b { left: 50%; top: 27%; width: 95vw; height: 14vh; }
-        .mask-c { left: 50%; top: 49%; width: 95vw; height: 14vh; }
-        .mask-d { left: 66%; top: 82%; width: 70vw; height: 10vh; }
-        .pos-title { left: 26%; top: 10%; }
-        .pos-i { left: 30%; top: 30%; }
-        .pos-d { left: 72%; top: 24%; }
-        .pos-e { left: 30%; top: 52%; }
-        .pos-p { left: 72%; top: 46%; }
-        .pos-more { left: 70%; top: 80%; }
+        .mask-a { left: 30%; top: 14%; width: max(70vw, 40vh); height: 10vh; }
+        .mask-b { left: 45%; top: 28%; width: max(95vw, 60vh); height: 15vh; }
+        .mask-c { left: 55%; top: 52%; width: max(95vw, 60vh); height: 15vh; }
+        .mask-d { left: 70%; top: 80%; width: max(70vw, 40vh); height: 10vh; }
+        .card { border-radius: 3vw; }
     }
 </style>
 </head>
@@ -117,31 +99,32 @@
     <!-- 第 1 层：粗斑马纹 -->
     <div class="stripes"></div>
 
-    <!-- 第 2 层：4 条白色蒙版 -->
-    <div class="mask mask-a"></div>
-    <div class="mask mask-b"></div>
-    <div class="mask mask-c"></div>
-    <div class="mask mask-d"></div>
+    <!-- 第 2 层：白色蒙版，内嵌内容 -->
+    <div class="mask mask-a">
+        <a href="#" class="word">网页标题</a>
+    </div>
 
-    <!-- 第 3 层：q 标题（纯文字） -->
-    <a href="#" class="word pos-title">网页标题</a>
+    <div class="mask mask-b">
+        <a class="card card-1" href="https://gumingdilian-hub.github.io/input/">
+            <h2>Input</h2><p>项目简介文字占位</p>
+        </a>
+        <a class="card card-2" href="https://gumingdilian-hub.github.io/dendrites/">
+            <h2>Dendrites</h2><p>项目简介文字占位</p>
+        </a>
+    </div>
 
-    <!-- i / d / e / p 四个按钮，贴在中间两条蒙版上 -->
-    <a class="card pos-i" href="https://gumingdilian-hub.github.io/input/">
-        <h2>Input</h2><p>项目简介文字占位</p>
-    </a>
-    <a class="card pos-d" href="https://gumingdilian-hub.github.io/dendrites/">
-        <h2>Dendrites</h2><p>项目简介文字占位</p>
-    </a>
-    <a class="card pos-e" href="https://gumingdilian-hub.github.io/axons/">
-        <h2>Axons</h2><p>项目简介文字占位</p>
-    </a>
-    <a class="card pos-p" href="https://gumingdilian-hub.github.io/print/">
-        <h2>Print</h2><p>项目简介文字占位</p>
-    </a>
+    <div class="mask mask-c">
+        <a class="card card-1" href="https://gumingdilian-hub.github.io/axons/">
+            <h2>Axons</h2><p>项目简介文字占位</p>
+        </a>
+        <a class="card card-2" href="https://gumingdilian-hub.github.io/print/">
+            <h2>Print</h2><p>项目简介文字占位</p>
+        </a>
+    </div>
 
-    <!-- w 其他网页（纯文字） -->
-    <a href="more.html" class="word pos-more">其他网页</a>
+    <div class="mask mask-d">
+        <a href="more.html" class="word">其他网页</a>
+    </div>
 
     <script>
         // 开局测量屏幕分辨率，arctan(高/宽) 得对角线角度
